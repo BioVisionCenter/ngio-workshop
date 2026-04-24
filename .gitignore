@@ -4,6 +4,6 @@ __pycache__/
 *.pyo
 .DS_Store
 .claude/
-docs/*html
+docs/[0-9]*.html
 notebooks/__marimo__/
 *.zarr

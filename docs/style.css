@@ -1,0 +1,200 @@
+/* =============================================
+   THEME — edit these values to customize colors
+   ============================================= */
+:root {
+  --color-bg:            #f8f9fb;
+  --color-text:          #1a1a2e;
+  --color-header-from:   #1a1a2e;
+  --color-header-mid:    #16213e;
+  --color-header-to:     #0f3460;
+  --color-accent:        #7dd3fc; /* links, hover borders, badge text */
+  --color-accent-dark:   #0369a1; /* nb-num text, arrow hover */
+  --color-accent-bg:     #f0f9ff; /* nb-num background */
+  --color-accent-border: #bae6fd; /* nb-num border */
+  --color-muted:         #94a3b8; /* subtitles, footer */
+  --color-border:        #e2e8f0; /* card borders */
+  --color-label:         #64748b; /* section labels */
+  --color-card-bg:       #ffffff;
+  --color-code-bg:       #f1f5f9; /* install code block background */
+  --radius-card:         10px;
+  --radius-code:         6px;
+  --max-width:           720px;
+}
+
+/* =============================================
+   RESET + BASE
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+/* =============================================
+   LAYOUT
+   ============================================= */
+header {
+  background: linear-gradient(
+    135deg,
+    var(--color-header-from)  0%,
+    var(--color-header-mid)  60%,
+    var(--color-header-to)  100%
+  );
+  color: white;
+  padding: 3.5rem 2rem 3rem;
+}
+
+.header-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+main {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+footer {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 2rem 3rem;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+footer a { color: var(--color-label); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* =============================================
+   COMPONENTS
+   ============================================= */
+
+/* --- Header badge & title --- */
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--color-muted);
+  line-height: 1.65;
+  max-width: 500px;
+}
+
+.subtitle a { color: var(--color-accent); text-decoration: none; }
+.subtitle a:hover { text-decoration: underline; }
+
+/* --- Section label --- */
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-label);
+  margin-bottom: 1rem;
+}
+
+/* --- Install block --- */
+.install-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.install-block p {
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.install-block pre {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-code);
+  padding: 0.7rem 1rem;
+  overflow-x: auto;
+}
+
+.install-block code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88rem;
+  color: var(--color-text);
+}
+
+/* --- Notebook cards --- */
+.nb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.nb-card {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.1rem 1.4rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.nb-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 4px 16px rgba(125, 211, 252, 0.15);
+  transform: translateY(-1px);
+}
+
+.nb-num {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-accent-bg);
+  border: 1px solid var(--color-accent-border);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+}
+
+.nb-title {
+  font-size: 0.975rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.nb-arrow {
+  margin-left: auto;
+  color: var(--color-muted);
+  font-size: 1rem;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.nb-card:hover .nb-arrow {
+  color: var(--color-accent-dark);
+  transform: translateX(3px);
+}
