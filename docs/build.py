@@ -32,7 +32,7 @@ def extract_title(py_path: Path) -> str:
 
 def export_notebook(py_path: Path, out_html: Path) -> bool:
     result = subprocess.run(
-        ["uvx", "marimo", "export", "html", "--sandbox", str(py_path), "-o", str(out_html)],
+        ["uvx", "marimo", "export", "html", "--execute", "--sandbox", str(py_path), "-o", str(out_html)],
         capture_output=True,
         text=True,
     )
