@@ -20,8 +20,18 @@ uvx marimo edit --sandbox notebooks/<notebook>.py
 
 On first run uv will create an isolated environment for the notebook and install its dependencies. This takes a minute; subsequent runs are instant.
 
+## Documentation
+
+Live notebooks (read-only): https://&lt;your-org&gt;.github.io/ngio-workshop/
+
+To build docs locally:
+
+```bash
+uv run docs/build.py
+```
+
 ## Workshop modules
 
 | Module | Topic |
 |--------|-------|
-| TBD    | TBD   |
+| [1 — Introduction to ngio](notebooks/1_ngio_basics.py) | OME-Zarr containers, images, labels, and tables |
