@@ -1,6 +1,6 @@
 # ngio Workshop
 
-Hands-on workshop materials for [ngio](https://github.com/fractal-analytics-platform/ngio), a Python library for reading and writing OME-Zarr / NGFF bioimages. Notebooks are built with [marimo](https://marimo.io) for an interactive, reproducible experience.
+Hands-on workshop materials to get started with [ngio](https://biovisioncenter.github.io/ngio). ngio is a Python library designed to simplify bioimage analysis workflows, offering an intuitive interface for working with OME-Zarr files.
 
 Each notebook is self-contained: it declares its own dependencies inline and marimo uses [uv](https://docs.astral.sh/uv/) to create an isolated environment automatically.
 
@@ -20,18 +20,18 @@ uvx marimo edit --sandbox notebooks/<notebook>.py
 
 On first run uv will create an isolated environment for the notebook and install its dependencies. This takes a minute; subsequent runs are instant.
 
-## Documentation
-
-Live notebooks (read-only): https://&lt;your-org&gt;.github.io/ngio-workshop/
-
-To build docs locally:
-
-```bash
-uv run docs/build.py
-```
-
 ## Workshop modules
 
 | Module | Topic |
 |--------|-------|
 | [1 — Introduction to ngio](notebooks/1_ngio_basics.py) | OME-Zarr containers, images, labels, and tables |
+
+## Documentation
+
+You can find view a static version of the notebooks in the [documentation](https://biovisioncenter.github.io/ngio-workshop/).
+
+Or you can build the documentation locally with:
+
+```bash
+uv run docs/build.py
+```

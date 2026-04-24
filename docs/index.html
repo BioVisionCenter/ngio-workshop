@@ -12,20 +12,23 @@
       <div class="badge">Workshop</div>
       <h1>ngio Workshop</h1>
       <p class="subtitle">
-        Hands-on notebooks for <a href="https://github.com/fractal-analytics-platform/ngio">ngio</a>,
-        a Python library for reading and writing OME-Zarr bioimages.
+        Hands-on notebooks for learning the basics of <a href="https://github.com/fractal-analytics-platform/ngio">ngio</a>.
       </p>
     </div>
   </header>
 
   <main>
     <section class="install">
-      <div class="section-label">Installation</div>
+      <div class="section-label">Running the Notebooks</div>
       <div class="install-block">
-        <p>Install <strong>ngio</strong> with pip:</p>
-        <pre><code>pip install ngio</code></pre>
-        <p>Or with uv:</p>
-        <pre><code>uv add ngio</code></pre>
+        <p>The notebooks are self-contained and manage their own dependencies. You only need <a href="https://docs.astral.sh/uv/">uv</a> installed.</p>
+        <p>Clone the repository:</p>
+        <pre><code>git clone https://github.com/fractal-analytics-platform/ngio-workshop.git
+cd ngio-workshop</code></pre>
+        <p>Run a notebook interactively:</p>
+        <pre><code>uvx marimo run --sandbox notebooks/1_ngio_basics.py</code></pre>
+        <p>Or open it for editing:</p>
+        <pre><code>uvx marimo edit --sandbox notebooks/1_ngio_basics.py</code></pre>
       </div>
     </section>
 
@@ -33,6 +36,11 @@
       <div class="section-label">Notebooks</div>
       <div class="nb-list">
         <!-- notebooks:start -->
+        <a class="nb-card" href="1_ngio_basics.html">
+          <span class="nb-num">1</span>
+          <span class="nb-title">Introduction to ngio</span>
+          <span class="nb-arrow">&#8594;</span>
+        </a>
         <!-- notebooks:end -->
       </div>
     </section>
