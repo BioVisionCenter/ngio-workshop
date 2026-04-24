@@ -6,5 +6,4 @@ __pycache__/
 .claude/
 docs/*html
 notebooks/__marimo__/
-notebooks/layouts/
 *.zarr

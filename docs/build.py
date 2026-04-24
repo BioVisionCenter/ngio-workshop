@@ -14,6 +14,7 @@ Usage:
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -31,11 +32,21 @@ def extract_title(py_path: Path) -> str:
 
 
 def export_notebook(py_path: Path, out_html: Path) -> bool:
-    result = subprocess.run(
-        ["uvx", "marimo", "export", "html", "--execute", "--sandbox", str(py_path), "-o", str(out_html)],
-        capture_output=True,
-        text=True,
-    )
+    # Strip layout_file before export — marimo inlines it as a data URI on every
+    # save, which then breaks inline_layout_file() during export (it tries to
+    # open the data URI string as a file path).
+    content = re.sub(r'\s*layout_file\s*=\s*[^\n,]+,?\n', '\n', py_path.read_text())
+    with tempfile.NamedTemporaryFile(suffix=".py", mode="w", dir=py_path.parent, delete=False) as tmp:
+        tmp.write(content)
+        tmp_path = Path(tmp.name)
+    try:
+        result = subprocess.run(
+            ["uvx", "marimo", "export", "html", "--sandbox", str(tmp_path), "-o", str(out_html)],
+            capture_output=True,
+            text=True,
+        )
+    finally:
+        tmp_path.unlink(missing_ok=True)
     if result.returncode != 0:
         print(f"  ERROR: {py_path.name}\n{result.stderr}", file=sys.stderr)
         return False
