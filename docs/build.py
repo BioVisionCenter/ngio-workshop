@@ -35,7 +35,7 @@ def export_notebook(py_path: Path, out_html: Path) -> bool:
     # Strip layout_file before export — marimo inlines it as a data URI on every
     # save, which then breaks inline_layout_file() during export (it tries to
     # open the data URI string as a file path).
-    content = re.sub(r'\s*layout_file\s*=\s*[^\n,]+,?\n', '\n', py_path.read_text())
+    content = re.sub(r'\s*layout_file\s*=\s*(?:"[^"]*"|\'[^\']*\'),?\n', '\n', py_path.read_text())
     with tempfile.NamedTemporaryFile(suffix=".py", mode="w", dir=py_path.parent, delete=False) as tmp:
         tmp.write(content)
         tmp_path = Path(tmp.name)
