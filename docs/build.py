@@ -21,6 +21,10 @@ ROOT = Path(__file__).parent.parent
 NOTEBOOKS_DIR = ROOT / "notebooks"
 DOCS_DIR = ROOT / "docs"
 
+GITHUB_REPO = "BioVisionCenter/ngio-workshop"
+GITHUB_BRANCH = "main"
+MOLAB_BASE = f"https://molab.marimo.io/github/{GITHUB_REPO}/blob/{GITHUB_BRANCH}"
+
 
 def extract_title(py_path: Path) -> str:
     text = py_path.read_text()
@@ -56,11 +60,16 @@ def export_notebook(py_path: Path, out_html: Path) -> bool:
 def inject_notebooks(notebooks: list[dict]) -> None:
     template = (DOCS_DIR / "index.html").read_text()
     cards = "".join(
-        f'        <a class="nb-card" href="{nb["href"]}">\n'
-        f'          <span class="nb-num">{nb["number"]}</span>\n'
-        f'          <span class="nb-title">{nb["title"]}</span>\n'
-        f'          <span class="nb-arrow">&#8594;</span>\n'
-        f'        </a>\n'
+        f'        <div class="nb-row">\n'
+        f'          <a class="nb-card" href="{nb["href"]}">\n'
+        f'            <span class="nb-num">{nb["number"]}</span>\n'
+        f'            <span class="nb-title">{nb["title"]}</span>\n'
+        f'            <span class="nb-arrow">&#8594;</span>\n'
+        f'          </a>\n'
+        f'          <a class="nb-molab-btn" href="{nb["molab_url"]}" target="_blank" rel="noopener">\n'
+        f'            <img src="https://marimo.io/molab-shield.svg" alt="Open in molab" />\n'
+        f'          </a>\n'
+        f'        </div>\n'
         for nb in notebooks
     )
     start = "<!-- notebooks:start -->"
@@ -93,8 +102,9 @@ def main():
         print(f"Exporting {py_path.name} -> docs/{py_path.stem}.html")
         m = re.match(r"^(\d+)_", py_path.name)
         number = m.group(1) if m else "?"
+        molab_url = f"{MOLAB_BASE}/notebooks/{py_path.name}"
         if export_notebook(py_path, out_html):
-            notebooks.append({"href": f"{py_path.stem}.html", "title": title, "number": number})
+            notebooks.append({"href": f"{py_path.stem}.html", "title": title, "number": number, "molab_url": molab_url})
 
     inject_notebooks(notebooks)
     print(f"Updated docs/index.html with {len(notebooks)} notebook(s)")

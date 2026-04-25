@@ -2,20 +2,20 @@
    THEME — edit these values to customize colors
    ============================================= */
 :root {
-  --color-bg:            #f8f9fb;
-  --color-text:          #1a1a2e;
-  --color-header-from:   #1a1a2e;
-  --color-header-mid:    #16213e;
-  --color-header-to:     #0f3460;
-  --color-accent:        #7dd3fc; /* links, hover borders, badge text */
-  --color-accent-dark:   #0369a1; /* nb-num text, arrow hover */
-  --color-accent-bg:     #f0f9ff; /* nb-num background */
-  --color-accent-border: #bae6fd; /* nb-num border */
-  --color-muted:         #94a3b8; /* subtitles, footer */
-  --color-border:        #e2e8f0; /* card borders */
-  --color-label:         #64748b; /* section labels */
+  --color-bg:            #f4f7fb;
+  --color-text:          #1c2c4a;
+  --color-header-from:   #1c2c4a;
+  --color-header-mid:    #0f3d6e;
+  --color-header-to:     #0d6e80;
+  --color-accent:        #00b4d4; /* links, hover borders, badge text */
+  --color-accent-dark:   #007a90; /* nb-num text, arrow hover */
+  --color-accent-bg:     #e6f7fa; /* nb-num background */
+  --color-accent-border: #a0dde8; /* nb-num border */
+  --color-muted:         #7a95b5; /* subtitles, footer */
+  --color-border:        #d4e2ef; /* card borders */
+  --color-label:         #4a6885; /* section labels */
   --color-card-bg:       #ffffff;
-  --color-code-bg:       #f1f5f9; /* install code block background */
+  --color-code-bg:       #eef3f8; /* install code block background */
   --radius-card:         10px;
   --radius-code:         6px;
   --max-width:           720px;
@@ -114,19 +114,43 @@ h1 {
   margin-bottom: 1rem;
 }
 
-/* --- Install block --- */
-.install-block {
+/* --- Run options --- */
+.run-options {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 1.4rem;
 }
 
-.install-block p {
+.run-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--color-border);
+}
+
+.run-option-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-dark);
+}
+
+.run-option p {
   font-size: 0.95rem;
   color: var(--color-text);
+  line-height: 1.6;
 }
 
-.install-block pre {
+.run-option a {
+  color: var(--color-accent-dark);
+  text-decoration: none;
+}
+
+.run-option a:hover { text-decoration: underline; }
+
+.run-option pre {
   background: var(--color-code-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-code);
@@ -134,7 +158,7 @@ h1 {
   overflow-x: auto;
 }
 
-.install-block code {
+.run-option code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.88rem;
   color: var(--color-text);
@@ -145,6 +169,21 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+}
+
+.nb-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nb-row .nb-card {
+  flex: 1;
+}
+
+.nb-molab-btn img {
+  display: block;
+  height: 28px;
 }
 
 .nb-card {

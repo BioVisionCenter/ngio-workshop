@@ -20,15 +20,23 @@
   <main>
     <section class="install">
       <div class="section-label">Running the Notebooks</div>
-      <div class="install-block">
-        <p>The notebooks are self-contained and manage their own dependencies. You only need <a href="https://docs.astral.sh/uv/">uv</a> installed.</p>
-        <p>Clone the repository:</p>
-        <pre><code>git clone https://github.com/fractal-analytics-platform/ngio-workshop.git
-cd ngio-workshop</code></pre>
-        <p>Run a notebook interactively:</p>
-        <pre><code>uvx marimo run --sandbox notebooks/1_ngio_basics.py</code></pre>
-        <p>Or open it for editing:</p>
-        <pre><code>uvx marimo edit --sandbox notebooks/1_ngio_basics.py</code></pre>
+      <div class="run-options">
+        <div class="run-option">
+          <div class="run-option-label">In the cloud</div>
+          <p>Click the Open in molab badge next to any notebook below to run it in your browser via <a href="https://molab.marimo.io">molab</a>. No local setup required — a free account is needed to execute cells.</p>
+        </div>
+        <div class="run-option">
+          <div class="run-option-label">Locally</div>
+          <p>The notebooks are self-contained and manage their own dependencies. You only need <a href="https://docs.astral.sh/uv/">uv</a> installed.</p>
+          <pre><code>git clone https://github.com/BioVisionCenter/ngio-workshop.git
+cd ngio-workshop
+uvx marimo edit --sandbox notebooks/&lt;notebook&gt;.py</code></pre>
+          <p>On first run uv creates an isolated environment and installs dependencies. This takes a minute; subsequent runs are instant.</p>
+        </div>
+        <div class="run-option">
+          <div class="run-option-label">Follow along</div>
+          <p>The notebooks below link to a static read-only version — no account needed, but you won't be able to modify or execute cells.</p>
+        </div>
       </div>
     </section>
 
@@ -36,16 +44,26 @@ cd ngio-workshop</code></pre>
       <div class="section-label">Notebooks</div>
       <div class="nb-list">
         <!-- notebooks:start -->
-        <a class="nb-card" href="1_ngio_basics.html">
-          <span class="nb-num">1</span>
-          <span class="nb-title">Introduction to ngio</span>
-          <span class="nb-arrow">&#8594;</span>
-        </a>
-        <a class="nb-card" href="2_iterators.html">
-          <span class="nb-num">2</span>
-          <span class="nb-title">Iterators in ngio</span>
-          <span class="nb-arrow">&#8594;</span>
-        </a>
+        <div class="nb-row">
+          <a class="nb-card" href="1_ngio_basics.html">
+            <span class="nb-num">1</span>
+            <span class="nb-title">Introduction to ngio</span>
+            <span class="nb-arrow">&#8594;</span>
+          </a>
+          <a class="nb-molab-btn" href="https://molab.marimo.io/github/BioVisionCenter/ngio-workshop/blob/main/notebooks/1_ngio_basics.py" target="_blank" rel="noopener">
+            <img src="https://marimo.io/molab-shield.svg" alt="Open in molab" />
+          </a>
+        </div>
+        <div class="nb-row">
+          <a class="nb-card" href="2_iterators.html">
+            <span class="nb-num">2</span>
+            <span class="nb-title">Iterators in ngio</span>
+            <span class="nb-arrow">&#8594;</span>
+          </a>
+          <a class="nb-molab-btn" href="https://molab.marimo.io/github/BioVisionCenter/ngio-workshop/blob/main/notebooks/2_iterators.py" target="_blank" rel="noopener">
+            <img src="https://marimo.io/molab-shield.svg" alt="Open in molab" />
+          </a>
+        </div>
         <!-- notebooks:end -->
       </div>
     </section>
