@@ -18,8 +18,9 @@ app = marimo.App(width="full", auto_download=["html"])
 @app.cell
 def _():
     import marimo as mo
+    from pathlib import Path
 
-    return (mo,)
+    return Path, mo
 
 
 @app.cell(hide_code=True)
@@ -199,8 +200,7 @@ def _(mo):
 
 
 @app.cell
-def _(mo):
-    from pathlib import Path
+def _(Path):
     import ngio
     from ngio.utils import download_ome_zarr_dataset, list_ome_zarr_datasets
 
@@ -212,8 +212,15 @@ def _(mo):
     image_path = hcs_path / "B" / "03" / "0"
     ome_zarr_container = ngio.open_ome_zarr_container(image_path)
     image = ome_zarr_container.get_image()
-    mo.md(f"Opened container: `{image_path}`")
-    return data_dir, image, ome_zarr_container
+    return data_dir, image, image_path, ome_zarr_container
+
+
+@app.cell(hide_code=True)
+def _(image_path, mo):
+    mo.md(f"""
+    Opened container: `{image_path}`
+    """)
+    return
 
 
 @app.cell(hide_code=True)
@@ -437,9 +444,8 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _():
+def _(Path):
     import sys
-    from pathlib import Path
 
     sys.path.insert(0, str(Path(__file__).parent))
     from utils import compare_containers, plot_image
@@ -458,7 +464,7 @@ def _(mo):
 
 
 @app.cell
-def _(compare_containers, data_dir, image, mo, ome_zarr_container):
+def _(data_dir, image, ome_zarr_container):
     # Source axes are (c, z, y, x). The derived MIP keeps the same layout
     # but reduces both c and z to length 1 (we only keep DAPI-MIP and
     # collapse Z). YX is taken from the source so it stays in lockstep
@@ -471,14 +477,18 @@ def _(compare_containers, data_dir, image, mo, ome_zarr_container):
         ngff_version="0.5",
         overwrite=True,
     )
+    return (derived_ome_zarr,)
 
+
+@app.cell(hide_code=True)
+def _(compare_containers, derived_ome_zarr, mo, ome_zarr_container):
     mo.md(
         "**Original vs derived container.** The derived container keeps the "
         "multiscale + channel structure of the source but updates shape, "
         "channel labels, and NGFF version:\n\n"
         + compare_containers(ome_zarr_container, derived_ome_zarr)
     )
-    return (derived_ome_zarr,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -725,7 +735,7 @@ def _(feature_table_plot, mo, x_axis, y_axis):
             y=alt.Y(f"{y_axis.value}:Q", title=y_axis.value),
             tooltip=list(feature_df_alt.columns),
         )
-        .properties(width=800, height=400)
+        .properties(width=700, height=400)
         .interactive(),
         chart_selection="point",
     )
@@ -793,11 +803,6 @@ def _(mo):
     **iterators** — the pattern that lets you scale this same MIP →
     segment → measure pipeline to images that don't fit in RAM.
     """)
-    return
-
-
-@app.cell
-def _():
     return
 
 

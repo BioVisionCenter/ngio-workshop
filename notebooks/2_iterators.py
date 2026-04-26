@@ -109,7 +109,7 @@ def _(Path):
     return (plot_image,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _(Path, mo):
     iter_builder_image = mo.image(
         src=Path(__file__).parent / "assets" / "iterators-builder.png"
@@ -242,7 +242,7 @@ def _(mo):
 
 
 @app.cell
-def _(Path, mo):
+def _(Path):
     import ngio
     from ngio.utils import download_ome_zarr_dataset
 
@@ -256,17 +256,22 @@ def _(Path, mo):
 
     image = ome_zarr.get_image()
     fov_table = ome_zarr.get_roi_table("FOV_ROI_table")
-
-    mo.md(
-        "**Sample image opened.**\n\n"
-        "| Property | Value |\n"
-        "|---|---|\n"
-        f"| `shape` | `{image.shape}` |\n"
-        f"| `axes` | `{image.axes}` |\n"
-        f"| `channel_labels` | `{image.channel_labels}` |\n"
-        f"| `FOV_ROI_table` regions | `{[r.name for r in fov_table.rois()]}` |"
-    )
     return fov_table, image, ngio, ome_zarr
+
+
+@app.cell(hide_code=True)
+def _(fov_table, image, mo):
+    mo.md(f"""
+    **Sample image opened.**
+
+    | Property | Value |
+    |---|---|
+    | `shape` | `{image.shape}` |
+    | `axes` | `{image.axes}` |
+    | `channel_labels` | `{image.channel_labels}` |
+    | `FOV_ROI_table` regions | `{[r.name for r in fov_table.rois()]}` |
+    """)
+    return
 
 
 @app.cell(hide_code=True)
@@ -484,7 +489,7 @@ def _(
 
 
 @app.cell
-def _(image, iter_roi_table, mo, ome_zarr):
+def _(image, iter_roi_table, ome_zarr):
     from ngio.experimental.iterators import SegmentationIterator
 
     nuc_label = ome_zarr.derive_label("nuclei_seg", overwrite=True)
@@ -499,10 +504,14 @@ def _(image, iter_roi_table, mo, ome_zarr):
         .product(iter_roi_table)
         .by_yx()
     )
-
-    _rows = "\n".join(f"| {_roi.name} |" for _roi in seg_iterator.rois)
-    mo.md(f"**Patches that will be iterated:**\n\n| ROI name |\n| --- |\n{_rows}")
     return SegmentationIterator, nuc_label, seg_iterator
+
+
+@app.cell(hide_code=True)
+def _(mo, seg_iterator):
+    _rows = "\n".join(f"| {_roi} |" for _roi in seg_iterator.rois)
+    mo.md(f"**Patches that will be iterated:**\n\n| ROI name |\n| --- |\n{_rows}")
+    return
 
 
 @app.cell(hide_code=True)
@@ -563,7 +572,6 @@ def _(
     basic_segmentation,
     image,
     iter_roi_table,
-    mo,
     np,
     nuc_label,
     ome_zarr,
@@ -613,15 +621,19 @@ def _(
         title="Unique labels via output transform",
         axes_order="yx",
     )
+    return naive_unique_count, unique_label_count
 
-    mo.md(
-        "**Distinct label IDs across all patches** "
-        "(higher = more nuclei resolved as separate objects)\n\n"
-        "| Run | Unique labels |\n"
-        "|---|---:|\n"
-        f"| Naive `map_as_numpy` | `{naive_unique_count}` |\n"
-        f"| With `UniqueLabelOffset` | `{unique_label_count}` |"
-    )
+
+@app.cell(hide_code=True)
+def _(mo, naive_unique_count, unique_label_count):
+    mo.md(f"""
+    **Distinct label IDs across all patches** (higher = more nuclei resolved as separate objects)
+
+    | Run | Unique labels |
+    |---|---:|
+    | Naive `map_as_numpy` | `{naive_unique_count}` |
+    | With `UniqueLabelOffset` | `{unique_label_count}` |
+    """)
     return
 
 
@@ -704,6 +716,11 @@ def _(mo):
     image-to-image processing, masked workflows, and per-object
     measurement pipelines.
     """)
+    return
+
+
+@app.cell
+def _():
     return
 
 
