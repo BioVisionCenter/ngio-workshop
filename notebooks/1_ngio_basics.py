@@ -420,8 +420,45 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 4 Putting it together — a basic 2D nuclei pipeline
+
+    We now chain three steps that mirror a typical 2-D
+    nuclei-counting workflow:
+
+    0. **Derive** — setup a new ome-zarr container
+    1. **Maximum Intensity Projection** — collapse the Z stack into a 2-D image.
+    2. **Basic segmentation** — detect each nucleus.
+    3. **Feature extraction** — measure size, intensity, shape per object.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).parent))
+    from utils import compare_containers, plot_image
+
+    return compare_containers, plot_image
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ### 4.0 Derive a new container
+
+    We will create a new OME-Zarr container that holds the Maximum Intensity Projection.
+    """)
+    return
+
+
 @app.cell
-def _(data_dir, image, mo, ome_zarr_container):
+def _(compare_containers, data_dir, image, mo, ome_zarr_container):
     # Source axes are (c, z, y, x). The derived MIP keeps the same layout
     # but reduces both c and z to length 1 (we only keep DAPI-MIP and
     # collapse Z). YX is taken from the source so it stays in lockstep
@@ -435,159 +472,13 @@ def _(data_dir, image, mo, ome_zarr_container):
         overwrite=True,
     )
 
-
-    def _compare_containers(orig, deriv):
-        attrs = ("levels", "level_paths", "is_3d", "channel_labels")
-        rows = [
-            "| Attribute | Original | Derived |  |",
-            "|---|---|---|---:|",
-        ]
-        for attr in attrs:
-            o, d = getattr(orig, attr), getattr(deriv, attr)
-            marker = "✅ same" if o == d else "🔄 changed"
-            rows.append(f"| `{attr}` | `{o}` | `{d}` | {marker} |")
-        orig_img = orig.get_image()
-        deriv_img = deriv.get_image()
-        for attr in ("dimensions", "shape", "axes", "dtype"):
-            o, d = getattr(orig_img, attr), getattr(deriv_img, attr)
-            marker = "✅ same" if o == d else "🔄 changed"
-            rows.append(f"| `image.{attr}` | `{o}` | `{d}` | {marker} |")
-        return "\n".join(rows)
-
-
     mo.md(
         "**Original vs derived container.** The derived container keeps the "
         "multiscale + channel structure of the source but updates shape, "
         "channel labels, and NGFF version:\n\n"
-        + _compare_containers(ome_zarr_container, derived_ome_zarr)
+        + compare_containers(ome_zarr_container, derived_ome_zarr)
     )
     return (derived_ome_zarr,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 4 Putting it together — a basic 2D nuclei pipeline
-
-    We now chain three steps that mirror a typical 2-D
-    nuclei-counting workflow:
-
-    1. **Maximum Intensity Projection** — collapse the Z stack into a 2-D image.
-    2. **Basic segmentation** — detect each nucleus.
-    3. **Feature extraction** — measure size, intensity, shape per object.
-
-    The same `derived_ome_zarr` we just created will hold all three results
-    (a derived image, a derived label, and a derived table) — one
-    OME-Zarr file capturing the entire pipeline output.
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(BVC_TEAL, np, plt):
-    # Helpers used by every plot in §4 — kept in one place so the pipeline
-    # cells stay focused on the pipeline.
-    from matplotlib import colors
-    from matplotlib.patches import Rectangle
-
-    from ngio import OmeZarrContainer
-
-    # Categorical label colormap built
-    _cycled = np.random.rand(1000, 3)
-    _cycled[0] = [0, 0, 0]  # background is always black
-    LABEL_CMAP = colors.ListedColormap(_cycled)
-
-
-    def _add_scale_bar(ax, pixel_size_um, length_um=50.0):
-        bar_px = length_um / pixel_size_um
-        x_max = ax.get_xlim()[1]
-        y_max = ax.get_ylim()[0]  # imshow origin='upper': bottom == max
-        pad_x = 0.04 * x_max
-        pad_y = 0.04 * y_max
-        x0 = x_max - pad_x - bar_px
-        y0 = y_max - pad_y
-        ax.plot(
-            [x0, x0 + bar_px],
-            [y0, y0],
-            color="white",
-            linewidth=3,
-            solid_capstyle="butt",
-        )
-        ax.text(
-            x0 + bar_px / 2,
-            y0 - 0.015 * y_max,
-            f"{length_um:g} µm",
-            color="white",
-            ha="center",
-            va="bottom",
-            fontsize=9,
-            fontweight="bold",
-        )
-
-
-    def plot_image(
-        ome_zarr: OmeZarrContainer,
-        path: str = "0",
-        title: str = "",
-        label: str | None = None,
-        roi_table: str | None = None,
-        figsize: tuple[float, float] = (8, 8),
-        scale_bar_um: float | None = 50.0,
-        **kwargs,
-    ):
-        image = ome_zarr.get_image(path=path)
-        img = image.get_as_numpy(**kwargs)
-
-        fig, ax = plt.subplots(figsize=figsize)
-        ax.imshow(img, cmap="gray")
-        ax.set_title(title)
-        ax.axis("off")
-
-        if label is not None:
-            lbl = ome_zarr.get_label(label, path=path)
-            # Strip channel selection if present — labels don't have channels.
-            label_kwargs = {
-                k: v for k, v in kwargs.items() if k != "channel_selection"
-            }
-            lbl_img = lbl.get_as_numpy(**label_kwargs)
-            ax.imshow(lbl_img, cmap=LABEL_CMAP, interpolation="nearest", alpha=0.5)
-
-        if roi_table is not None:
-            # `get_generic_roi_table` accepts both regular RoiTable and
-            # MaskingRoiTable — both expose `.rois()` returning Roi objects.
-            table = ome_zarr.get_generic_roi_table(roi_table)
-            for roi in table.rois():
-                # World → pixel using the displayed image's own pixel size,
-                # then draw a rectangle from the (start, length) of x/y slices.
-                px_roi = roi.to_pixel(pixel_size=image.pixel_size)
-                xs, ys = px_roi.get("x"), px_roi.get("y")
-                if (
-                    xs is None
-                    or ys is None
-                    or xs.start is None
-                    or ys.start is None
-                ):
-                    continue
-                ax.add_patch(
-                    Rectangle(
-                        (xs.start, ys.start),
-                        xs.length,
-                        ys.length,
-                        fill=False,
-                        edgecolor=BVC_TEAL,
-                        linewidth=0.8,
-                    )
-                )
-
-        if scale_bar_um is not None and getattr(image.pixel_size, "x", None):
-            _add_scale_bar(
-                ax, pixel_size_um=image.pixel_size.x, length_um=scale_bar_um
-            )
-
-        fig.tight_layout()
-        plt.show()
-
-    return (plot_image,)
 
 
 @app.cell(hide_code=True)
@@ -864,25 +755,26 @@ def _(
         else []
     )
 
-    if len(_selected_labels) == 1:
-        _lbl = _selected_labels[0]
-        _fig, _ax = plt.subplots(figsize=(6, 6))
-        _roi = masking_roi_table_plot.get_label(_lbl).zoom(zoom.value)
-        _img = derived_image_plot.get_roi_as_numpy(
-            _roi, channel_selection="DAPI-MIP", axes_order="yx"
+    if len(_selected_labels) != 1:
+        mo.md(
+            "No point or multiple points selected. Please select a single point "
+            "on the scatter plot to preview the corresponding segmented object."
         )
-        _mask = derived_label_plot.get_roi_as_numpy(_roi, axes_order="yx")
-        _ax.imshow(_img, cmap="gray")
-        _ax.contour(_mask == _lbl, levels=[0.5], colors=BVC_TEAL, linewidths=1.5)
-        _ax.set_title(f"label {_lbl}")
-        _ax.axis("off")
-        _fig.tight_layout()
-        preview = _fig
-    else:
-        preview = mo.md(
-            "Select a single point on the scatter to preview the corresponding "
-            "segmented object."
-        )
+        _selected_labels = [1]
+
+    _lbl = _selected_labels[0]
+    _fig, _ax = plt.subplots(figsize=(6, 6))
+    _roi = masking_roi_table_plot.get_label(_lbl).zoom(zoom.value)
+    _img = derived_image_plot.get_roi_as_numpy(
+        _roi, channel_selection="DAPI-MIP", axes_order="yx"
+    )
+    _mask = derived_label_plot.get_roi_as_numpy(_roi, axes_order="yx")
+    _ax.imshow(_img, cmap="gray")
+    _ax.contour(_mask == _lbl, levels=[0.5], colors=BVC_TEAL, linewidths=1.5)
+    _ax.set_title(f"label {_lbl}")
+    _ax.axis("off")
+    _fig.tight_layout()
+    preview = _fig
 
     mo.hstack([feature_chart, preview], align="start", widths=[1, 1])
     return
