@@ -453,6 +453,7 @@ def _(np, plt):
     _cycled[0] = [0, 0, 0]  # background is always black
     _LABEL_CMAP = _colors.ListedColormap(_cycled)
 
+
     def _add_scale_bar(ax, pixel_size_um, length_um=50.0):
         bar_px = length_um / pixel_size_um
         x_max = ax.get_xlim()[1]
@@ -479,6 +480,7 @@ def _(np, plt):
             fontweight="bold",
         )
 
+
     def plot_image(
         ome_zarr,
         path="0",
@@ -503,14 +505,21 @@ def _(np, plt):
                 k: v for k, v in kwargs.items() if k != "channel_selection"
             }
             lbl_img = lbl.get_as_numpy(**label_kwargs)
-            ax.imshow(lbl_img, cmap=_LABEL_CMAP, interpolation="nearest", alpha=0.5)
+            ax.imshow(
+                lbl_img, cmap=_LABEL_CMAP, interpolation="nearest", alpha=0.5
+            )
 
         if roi_table is not None:
             table = ome_zarr.get_generic_roi_table(roi_table)
             for roi in table.rois():
                 px_roi = roi.to_pixel(pixel_size=image.pixel_size)
                 xs, ys = px_roi.get("x"), px_roi.get("y")
-                if xs is None or ys is None or xs.start is None or ys.start is None:
+                if (
+                    xs is None
+                    or ys is None
+                    or xs.start is None
+                    or ys.start is None
+                ):
                     continue
                 ax.add_patch(
                     _Rectangle(
@@ -530,6 +539,7 @@ def _(np, plt):
 
         fig.tight_layout()
         plt.show()
+
 
     def compare_containers(orig, deriv):
         attrs = ("levels", "level_paths", "is_3d", "channel_labels")
@@ -700,6 +710,7 @@ def _(derived_image, derived_ome_zarr, np, plot_image):
         name="basic_segmentation_ROI_table",
         table=roi_table,
         overwrite=True,
+        backend="csv",
     )
 
     plot_image(
