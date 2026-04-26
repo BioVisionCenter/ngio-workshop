@@ -100,14 +100,16 @@ def _():
 
 
 @app.cell(hide_code=True)
-def _(np, plt):
+def _(plt):
     from matplotlib import colors as _colors
     from matplotlib.patches import Rectangle as _Rectangle
+    import numpy as np
 
     _BVC_TEAL = "#3DBDB8"
     _cycled = np.random.rand(1000, 3)
     _cycled[0] = [0, 0, 0]  # background is always black
     _LABEL_CMAP = _colors.ListedColormap(_cycled)
+
 
     def _add_scale_bar(ax, pixel_size_um, length_um=50.0):
         bar_px = length_um / pixel_size_um
@@ -135,6 +137,7 @@ def _(np, plt):
             fontweight="bold",
         )
 
+
     def plot_image(
         ome_zarr,
         path="0",
@@ -159,14 +162,21 @@ def _(np, plt):
                 k: v for k, v in kwargs.items() if k != "channel_selection"
             }
             lbl_img = lbl.get_as_numpy(**label_kwargs)
-            ax.imshow(lbl_img, cmap=_LABEL_CMAP, interpolation="nearest", alpha=0.5)
+            ax.imshow(
+                lbl_img, cmap=_LABEL_CMAP, interpolation="nearest", alpha=0.5
+            )
 
         if roi_table is not None:
             table = ome_zarr.get_generic_roi_table(roi_table)
             for roi in table.rois():
                 px_roi = roi.to_pixel(pixel_size=image.pixel_size)
                 xs, ys = px_roi.get("x"), px_roi.get("y")
-                if xs is None or ys is None or xs.start is None or ys.start is None:
+                if (
+                    xs is None
+                    or ys is None
+                    or xs.start is None
+                    or ys.start is None
+                ):
                     continue
                 ax.add_patch(
                     _Rectangle(
@@ -187,13 +197,13 @@ def _(np, plt):
         fig.tight_layout()
         plt.show()
 
-    return (plot_image,)
+    return np, plot_image
 
 
 @app.cell(hide_code=True)
-def _(Path, mo):
+def _(mo):
     iter_builder_image = mo.image(
-        src=Path(__file__).parent / "assets" / "iterators-builder.png"
+        src="https://raw.githubusercontent.com/BioVisionCenter/ngio-workshop/refs/heads/main/notebooks/assets/iterators-builder.png"
     )
 
     iter_run_graph = mo.mermaid(r"""
@@ -370,8 +380,7 @@ def _(mo):
 
 
 @app.cell
-def _():
-    import numpy as np
+def _(np):
     from scipy import ndimage as ndi
     from skimage.feature import peak_local_max
     from skimage.filters import threshold_otsu
@@ -391,7 +400,7 @@ def _():
         seg = remove_small_objects(seg, max_size=500)
         return seg
 
-    return basic_segmentation, np
+    return (basic_segmentation,)
 
 
 @app.cell(hide_code=True)
