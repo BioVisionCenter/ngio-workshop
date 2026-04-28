@@ -213,7 +213,18 @@ def _(Path):
     image_path = hcs_path / "B" / "03" / "0"
     ome_zarr_container = ngio.open_ome_zarr_container(image_path)
     image = ome_zarr_container.get_image()
-    return data_dir, image, image_path, ome_zarr_container
+    return data_dir, image, image_path, ngio, ome_zarr_container
+
+
+@app.cell(hide_code=True)
+def _(ome_zarr_container, plot_image):
+    plot_image(
+        ome_zarr_container,
+        title="CardiomyocyteTiny, well B/03/0 (original image, level 0)",
+        axes_order="yx",
+        z=0,
+    )
+    return
 
 
 @app.cell(hide_code=True)
@@ -446,7 +457,7 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(np, plt):
+def _(ngio, np, plt):
     from matplotlib import colors as _colors
     from matplotlib.patches import Rectangle as _Rectangle
 
@@ -543,7 +554,9 @@ def _(np, plt):
         plt.show()
 
 
-    def compare_containers(orig, deriv):
+    def compare_containers(
+        orig: ngio.OmeZarrContainer, deriv: ngio.OmeZarrContainer
+    ):
         attrs = ("levels", "level_paths", "is_3d", "channel_labels")
         rows = [
             "| Attribute | Original | Derived |  |",
@@ -559,6 +572,16 @@ def _(np, plt):
             o, d = getattr(orig_img, attr), getattr(deriv_img, attr)
             marker = "✅ same" if o == d else "🔄 changed"
             rows.append(f"| `image.{attr}` | `{o}` | `{d}` | {marker} |")
+
+        o = orig_img.meta.version
+        d = deriv.meta.version
+        marker = "✅ same" if o == d else "🔄 changed"
+        rows.append(f"| `image.meta.version` | `{o}` | `{d}` | {marker} |")
+
+        o = orig_img.zarr_array.metadata.zarr_format
+        d = deriv_img.zarr_array.metadata.zarr_format
+        marker = "✅ same" if o == d else "🔄 changed"
+        rows.append(f"| `zarr_version` | `{o}` | `{d}` | {marker} |")
         return "\n".join(rows)
 
     return compare_containers, plot_image
