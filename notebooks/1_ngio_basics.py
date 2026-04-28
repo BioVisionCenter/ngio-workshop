@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "ngio",
+#     "ngio==0.5.9",
 #     "marimo",
 #     "matplotlib",
 #     "scikit-image",
@@ -39,6 +39,7 @@ def _(mo):
     - Integrate tabular data (ROIs, feature tables, and more).
     - Implement a basic image-processing pipeline:
       Maximum Intensity Projection → Basic segmentation → Feature extraction.
+    - Perform quality control by linking image that and quantification in an interactive scatter plot.
     """)
     return
 
@@ -191,8 +192,8 @@ def _(mo):
     the cached copy).
 
     We then open a single well image (`B/03/0`) as an `OmeZarrContainer`.
-    HCS plates are organised as **row letter / column number / field-of-view
-    index**, so `B/03/0` is *row B, column 3, field 0* — one well image out
+    HCS plates are organised as **row letter / column number / image
+    index**, so `B/03/0` is *row B, column 3, image 0* — one well image out
     of the plate. This is the object we will work with throughout the
     notebook.
     """)
@@ -324,7 +325,7 @@ def _(image, mo):
       levels from the data you just wrote at level 0.
 
     A **`Label`** stores **integer segmentation masks**. It shares the
-    image's multiscale pyramid but generally has no channel axis. The API
+    image's multiscale pyramid but sometimes has no channel axis. The API
     mirrors `Image` exactly:
 
     ```python
@@ -419,7 +420,7 @@ def _(mo):
     new_label.consolidate()
     ```
 
-    Below we derive a new container that drops the time and Z axes (we'll
+    Below we derive a new container that project along the Z axes (we'll
     store a 2-D Maximum Intensity Projection in it) and bumps the metadata
     to NGFF v0.5. The shape of a derived container can differ from the
     source but must keep the **same number of axes** (channels excepted).
@@ -435,10 +436,11 @@ def _(mo):
     We now chain three steps that mirror a typical 2-D
     nuclei-counting workflow:
 
-    0. **Derive** — setup a new ome-zarr container
-    1. **Maximum Intensity Projection** — collapse the Z stack into a 2-D image.
-    2. **Basic segmentation** — detect each nucleus.
-    3. **Feature extraction** — measure size, intensity, shape per object.
+    1. **Derive** — setup a new ome-zarr container
+    2. **Maximum Intensity Projection** — collapse the Z stack into a 2-D image.
+    3. **Basic segmentation** — detect each nucleus.
+    4. **Feature extraction** — measure size, intensity, shape per object.
+    5. **Interactive feature exploration**
     """)
     return
 
@@ -565,7 +567,7 @@ def _(np, plt):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 4.0 Derive a new container
+    ### 4.1 Derive a new container
 
     We will create a new OME-Zarr container that holds the Maximum Intensity Projection.
     """)
@@ -603,7 +605,7 @@ def _(compare_containers, derived_ome_zarr, mo, ome_zarr_container):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 4.1 Maximum Intensity Projection
+    ### 4.2 Maximum Intensity Projection
 
     We project the source image along the Z axis to get a single 2-D
     image per channel, then write the result back into our derived
@@ -642,7 +644,7 @@ def _(derived_ome_zarr, ome_zarr_container, plot_image):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 4.2 Basic segmentation
+    ### 4.3 Basic segmentation
 
     `basic_segmentation` chains a small set of `scikit-image` primitives.
     The five steps, in plain language:
@@ -725,12 +727,12 @@ def _(derived_image, derived_ome_zarr, np, plot_image):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 4.3 Feature extraction
+    ### 4.4 Feature extraction
 
     For each segmented nucleus we measure a handful of region properties
     with `scikit-image.regionprops_table`, and store them as a typed
     `FeatureTable` on the container. The `reference_label` argument links
-    each row back to the integer label it came from.
+    back to the label image from which the measurements come from.
     """)
     return
 
@@ -784,6 +786,7 @@ def _(derived_image, derived_label, derived_ome_zarr, np):
         overwrite=True,
     )
 
+    # Only for marimo display
     feature_table.lazy_frame.collect()  # compute the table (if there are lazy computations)
     return (feature_df,)
 
@@ -791,7 +794,7 @@ def _(derived_image, derived_label, derived_ome_zarr, np):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 4.4 Interactive feature exploration
+    ### 4.5 Interactive feature exploration
 
     Pick any two numeric columns to scatter the per-object features.
     **Click a single point** in the scatter on the left to render the

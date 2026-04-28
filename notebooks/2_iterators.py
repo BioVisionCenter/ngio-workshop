@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.11"
 # dependencies = [
-#     "ngio",
+#     "ngio==0.5.9",
 #     "marimo",
 #     "matplotlib",
 #     "scikit-image",
@@ -324,7 +324,7 @@ def _(mo):
     mo.md(r"""
     ## 2 Setup
 
-    We reuse the `CardiomyocyteTinyMip` sample dataset — a single well image
+    We use the `CardiomyocyteTinyMip` sample dataset — a single well image
     with one DAPI channel, one Z-plane (MIP), and an `FOV_ROI_table`. The
     FOV ROI table is one entry per microscope field of view; we will use it
     as the default iteration grid when no custom ROIs are drawn.
@@ -594,6 +594,7 @@ def _(image, iter_roi_table, ome_zarr):
         .product(iter_roi_table)
         .by_yx()
     )
+    # seg_iterator.require_no_regions_overlap()
     return SegmentationIterator, nuc_label, seg_iterator
 
 
@@ -717,7 +718,7 @@ def _(
 @app.cell(hide_code=True)
 def _(mo, naive_unique_count, unique_label_count):
     mo.md(f"""
-    **Distinct label IDs across all patches** (higher = more nuclei resolved as separate objects)
+    **Distinct label IDs across all patches**
 
     | Run | Unique labels |
     |---|---:|
