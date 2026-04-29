@@ -45,3 +45,6 @@ A static version of the notebooks is available in the [documentation](https://bi
 | [1 — Introduction to ngio](notebooks/1_ngio_basics.py) | OME-Zarr containers, images, labels, and tables | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/BioVisionCenter/ngio-workshop/blob/main/notebooks/1_ngio_basics.py) | [View](https://biovisioncenter.github.io/ngio-workshop/1_ngio_basics.html) |
 | [2 — Iterators in ngio](notebooks/2_iterators.py) | Iterating over images region-by-region without loading into RAM | [![Open in molab](https://marimo.io/molab-shield.svg)](https://molab.marimo.io/github/BioVisionCenter/ngio-workshop/blob/main/notebooks/2_iterators.py) | [View](https://biovisioncenter.github.io/ngio-workshop/2_iterators.html) |
 
+## Slides
+
+You can find the slides for the workshop as PDF [here](https://drive.google.com/file/d/1IRxC4qD2LvIBcGzyqdWbFsb1DHFXVbIC/view?usp=sharing).
