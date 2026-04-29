@@ -27,10 +27,16 @@
         <div class="run-option">
           <div class="run-option-label">In the cloud</div>
           <p>Click the Open in molab badge next to any notebook below to run it in your browser via <a href="https://molab.marimo.io">molab</a>. No local setup required — a free account is needed to execute cells.</p>
+          <p><strong>Heads up:</strong> if a molab tab sits idle for a long time, or you navigate away and back, you may see errors. Close the tab and reopen the notebook.</p>
         </div>
         <div class="run-option">
           <div class="run-option-label">Locally</div>
-          <p>The notebooks are self-contained and manage their own dependencies. You only need <a href="https://docs.astral.sh/uv/">uv</a> installed.</p>
+          <p>The notebooks are self-contained and manage their own dependencies. You only need <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a> installed.</p>
+          <p>On Unix-like systems (Linux, macOS):</p>
+          <pre><code>curl -LsSf https://astral.sh/uv/install.sh | sh</code></pre>
+          <p>and, on Windows:</p>
+          <pre><code>powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"</code></pre>
+          <p>Then clone the repository and launch a notebook:</p>
           <pre><code>git clone https://github.com/BioVisionCenter/ngio-workshop.git
 cd ngio-workshop
 uvx marimo edit --sandbox notebooks/&lt;notebook&gt;.py</code></pre>
