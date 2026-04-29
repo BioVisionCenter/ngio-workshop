@@ -11,7 +11,7 @@
 
 import marimo
 
-__generated_with = "0.23.3"
+__generated_with = "0.23.4"
 app = marimo.App(width="full", auto_download=["html"])
 
 
@@ -245,7 +245,7 @@ def _(mo):
     1. **`OmeZarrContainer`** — the file-level handle.
     2. **`Image`** and **`Label`** — pixel data, one resolution level at a time.
     3. **`Table`** — the tabular companion (ROIs, features, conditions, …).
-    4. **Deriving** — how to spawn a new OME-Zarr that mirrors the source.
+    4. **`Deriving`** — how to spawn a new OME-Zarr that mirrors the source.
     """)
     return
 
@@ -285,13 +285,18 @@ def _(mo):
 
     `levels = 5` means this image is stored at **5 resolutions**: level `0`
     is the full-resolution data, and each subsequent level is a downsampled
-    copy (typically a factor of 2 in XY). Viewers like napari read the
-    coarsest pyramid level when fully zoomed out and switch to finer levels
-    as you zoom in — that is what makes huge images browsable.
+    copy (typically a factor of 2 in XY).
 
     Throughout this notebook, `path="0"` means *full resolution*; pass
     `path="1"`, `"2"`, … to read a coarser, smaller copy.
     """)
+    return
+
+
+@app.cell
+def _():
+    from ngio import create_ome_zarr_from_array, create_empty_ome_zarr
+    # TODOs Create a sample image container
     return
 
 
@@ -349,6 +354,12 @@ def _(image, mo):
     return
 
 
+@app.cell
+def _():
+    # TODOs let's play with the sample OME-Zarr container
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -393,6 +404,14 @@ def _(mo):
     what's already on a container.
     """)
     return
+
+
+@app.cell
+def _():
+    from ngio.tables import RoiTable, MaskingRoiTable, FeatureTable
+    import pandas as pd
+    # TODOs Create a couple of sample tables
+    return FeatureTable, pd
 
 
 @app.cell(hide_code=True)
@@ -768,11 +787,8 @@ def _(derived_ome_zarr):
 
 
 @app.cell
-def _(derived_image, derived_label, derived_ome_zarr, np):
-    import pandas as pd
+def _(FeatureTable, derived_image, derived_label, derived_ome_zarr, np, pd):
     from skimage.measure import regionprops_table
-
-    from ngio.tables import FeatureTable
 
 
     def compute_region_props(
@@ -939,6 +955,11 @@ def _(mo):
     **iterators** — the pattern that lets you scale this same MIP →
     segment → measure pipeline to images that don't fit in RAM.
     """)
+    return
+
+
+@app.cell
+def _():
     return
 
 
