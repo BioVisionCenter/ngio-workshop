@@ -12,7 +12,7 @@
 
 import marimo
 
-__generated_with = "0.23.3"
+__generated_with = "0.23.4"
 app = marimo.App(
     width="full",
     layout_file="layouts/2_iterators.grid.json",
@@ -224,7 +224,30 @@ def _(mo):
         class FN multiscaleStyle
         class CONS tableStyle
     """)
-    return iter_builder_image, iter_run_graph
+
+
+    iter_t_run_graph = mo.mermaid(r"""
+    graph LR
+        %% === STYLE DEFINITIONS ===
+        classDef multiscaleStyle fill:#3DBDB8,stroke:#278784,stroke-width:2px,color:#fff,font-weight:bold
+        classDef imageStyle fill:#4A8FD4,stroke:#2E5C8A,stroke-width:2px,color:#fff
+        classDef tableStyle fill:#5CB87A,stroke:#3D7A54,stroke-width:2px,color:#fff,font-weight:bold
+
+        %% === GRAPH STRUCTURE ===
+        READ["read_patch"] --> TF1[In-Transform]
+        TF1 --> TF2[...]
+        TF2 --> FN["my_fn"]
+        FN --> TF3[...]
+        TF3 --> TF4[Out-Transform]
+        TF4 --> WRITE["write_patch"]
+        WRITE -->|next patch| READ
+
+        %% === APPLY STYLES ===
+        class READ,WRITE imageStyle
+        class FN multiscaleStyle
+        class CONS tableStyle
+    """)
+    return iter_builder_image, iter_run_graph, iter_t_run_graph
 
 
 @app.cell(hide_code=True)
@@ -232,19 +255,11 @@ def _(iter_builder_image, iter_run_graph, mo):
     mo.md(rf"""
     ## 1 Why iterators?
 
-    Real bioimages routinely don't fit in RAM — a 50k × 50k 16-bit plane is
-    already 5 GB *per channel*, and HCS plates multiply that by hundreds of
-    wells. Calling `image.get_as_numpy()` on data like that is not an option.
+    - **Reusable processing units** — make it very simple to write image processing routine that generalize.
+    - **Larger-than-RAM images** — process the images in small patches.
+    - **(Future) Free optimization** — parallelization, efficient read/write.
 
-    ngio iterators let you write the per-patch logic once and have ngio handle
-    the slicing, the read/write back to disk, and the consolidation of the
-    pyramid — keeping three properties:
-
-    - **Reusable pipelines** — the same processing function runs on a single
-      well or on a full plate, unchanged.
-    - **Larger-than-RAM images** — only one patch is in memory at a time.
-    - **No micro-optimisation** — you don't manage chunking, axis-order
-      conversions, or write-back ordering.
+    > **Warning!** Iterators are very much work in progress!
 
     ### 1.1 Two phases
 
@@ -565,7 +580,8 @@ def _(
     mo.vstack(
         [
             mo.md(
-                "Brush a rectangle on the heatmap, then click **Add ROI** to "
+                "### Let's build a custom ROI table \n"
+                "Brush a rectangle on the image, then click **Add ROI** to "
                 "store it. Repeat to build a custom ROI table; **Reset** clears "
                 "the list. With no ROIs drawn, the iterator falls back to "
                 "`FOV_ROI_table` so downstream cells still run."
@@ -576,6 +592,12 @@ def _(
         ]
     )
     return (iter_roi_table,)
+
+
+@app.cell
+def _(iter_roi_table):
+    iter_roi_table.rois()
+    return
 
 
 @app.cell
@@ -599,27 +621,22 @@ def _(image, iter_roi_table, ome_zarr):
 
 
 @app.cell(hide_code=True)
-def _(mo, seg_iterator):
-    _rows = "\n".join(f"| {_roi} |" for _roi in seg_iterator.rois)
-    mo.md(f"**Patches that will be iterated:**\n\n| ROI name |\n| --- |\n{_rows}")
+def _(seg_iterator):
+    seg_iterator.rois
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### 3.2 Naive run — let labels collide
+    #### Naive run — let labels collide
 
     We hand the `basic_segmentation` function straight to
     `seg_iterator.map_as_numpy(...)`. Each patch is segmented independently
     and written back to `nuclei_seg`.
 
-    > ⚠️ **Why this is broken**: `basic_segmentation` always assigns labels
-    > starting at `1`. Every patch therefore reuses the same IDs, so the
-    > global `nuclei_seg` image is **not** a valid instance segmentation —
-    > neighbouring patches collide on `1, 2, 3, …`.
-    > §3.3 fixes this with an output transform that offsets each patch's
-    > labels.
+    Every patch therefore reuses the same IDs, so the
+    global `nuclei_seg` would likely need a relabeling.
     """)
     return
 
@@ -639,20 +656,19 @@ def _(basic_segmentation, ome_zarr, plot_image, seg_iterator):
 
 
 @app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
+def _(iter_t_run_graph, mo):
+    mo.md(rf"""
     ### 3.3 Unique labels via an output transform
 
     `SegmentationIterator` accepts a list of `output_transforms` that run on
-    every patch *before* it is written to disk. A transform is any object
-    matching ngio's `TransformProtocol`. For a numpy `map_as_numpy` run, only
+    every patch *before* it is written to disk. 
+
+    {iter_t_run_graph}
+
+    A transform is any object matching ngio's `TransformProtocol`. For a numpy `map_as_numpy` run, only
     `set_as_numpy_transform(array, slicing_ops, axes_ops)` needs to be
     implemented; the other protocol methods (`get_as_numpy_transform`,
     `*_as_dask_transform`) are only consulted on read paths or in dask runs.
-
-    `UniqueLabelOffset` keeps a running `max_label` across calls and shifts
-    each patch's labels above the previous high-water mark — turning the
-    per-patch IDs into globally unique ones.
     """)
     return
 
@@ -668,6 +684,11 @@ def _(
     ome_zarr,
     plot_image,
 ):
+    # `UniqueLabelOffset` keeps a running `max_label` across calls and shifts
+    # each patch's labels above the previous high-water mark — turning the
+    # per-patch IDs into globally unique ones.
+
+
     class UniqueLabelOffset:
         """Shift every patch's labels above the running max so IDs stay unique."""
 
@@ -731,7 +752,7 @@ def _(mo, naive_unique_count, unique_label_count):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4 Stateful iteration — `iter_as_numpy`
+    ## 3.4 Stateful iteration — `iter_as_numpy`
 
     `map_as_numpy` is the right call when each patch is independent. When
     you need state across patches — a running counter, a cross-patch
@@ -771,13 +792,13 @@ def _(
     )
 
     max_label = 0
-    for _patch, _writer in seg_iterator_loop.iter_as_numpy():
-        _seg = basic_segmentation(_patch)
-        _mask = _seg > 0
-        _seg = np.where(_mask, _seg + max_label, 0).astype(_seg.dtype)
-        if _mask.any():
-            max_label = int(_seg.max())
-        _writer(patch=_seg)
+    for patch, writer in seg_iterator_loop.iter_as_numpy():
+        seg = basic_segmentation(patch)
+        mask = seg > 0
+        seg = np.where(mask, seg + max_label, 0).astype(seg.dtype)
+        if mask.any():
+            max_label = int(seg.max())
+        writer(patch=seg)
 
     plot_image(
         ome_zarr,
@@ -785,33 +806,6 @@ def _(
         title="Stateful iter_as_numpy — running max_label in the loop",
         axes_order="yx",
     )
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## 5 Next steps
-
-    You have seen one iterator end-to-end:
-
-    1. **Build** — `SegmentationIterator(...).product(roi_table).by_yx()`.
-    2. **Execute** — either `map_as_numpy(fn)` for stateless work or
-       `for patch, writer in iter_as_numpy(): ...` when you need state.
-    3. **Compose** — pass `output_transforms=[...]` to slot per-patch
-       post-processing into the same builder.
-
-    The same builder/execute split is shared by the other three iterators
-    in §1.4 — `ImageProcessingIterator`, `MaskedSegmentationIterator`, and
-    `FeatureExtractorIterator` — so the patterns above transfer directly to
-    image-to-image processing, masked workflows, and per-object
-    measurement pipelines.
-    """)
-    return
-
-
-@app.cell
-def _():
     return
 
 
