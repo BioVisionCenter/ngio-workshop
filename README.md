@@ -1,4 +1,4 @@
-# ngio Workshop
+# ngio workshop
 
 Hands-on workshop materials to get started with [ngio](https://biovisioncenter.github.io/ngio). ngio is a Python library designed to simplify bioimage analysis workflows, offering an intuitive interface for working with OME-Zarr files.
 
